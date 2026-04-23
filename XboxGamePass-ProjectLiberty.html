@@ -1,0 +1,981 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Simulador de planes Game Pass – Configurable</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root {
+      --bg: #050608;
+      --bg-alt: #101218;
+      --card: #151822;
+      --accent: #2ecc71;
+      --accent-soft: #1f8f4f;
+      --text: #f5f5f5;
+      --muted: #a0a4b8;
+      --border: #262a3a;
+      --xbox-green: #107c10;
+      --radius: 10px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    body {
+      background: radial-gradient(circle at top, #1b2333 0, #050608 55%);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 24px;
+      display: flex;
+      justify-content: center;
+    }
+
+    .page {
+      max-width: 1100px;
+      width: 100%;
+    }
+
+    header {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .logo-circle {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 30% 30%, #3cff7a, #0a4f1a);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 20px;
+      color: #fff;
+    }
+
+    h1 {
+      font-size: 26px;
+      font-weight: 700;
+    }
+
+    header p {
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .lang-currency-switcher {
+      margin-left: auto;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .lang-switch button,
+    .currency-switch button {
+      padding: 6px 10px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--text);
+      cursor: pointer;
+      font-size: 13px;
+      transition: 0.15s ease;
+    }
+
+    .lang-switch button.active,
+    .currency-switch button.active {
+      background: var(--accent);
+      color: #000;
+      border-color: var(--accent);
+      font-weight: 600;
+    }
+
+    .lang-switch button:not(.active),
+    .currency-switch button:not(.active) {
+      opacity: 0.7;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1.1fr) minmax(0, 1.3fr);
+      gap: 20px;
+    }
+
+    .panel {
+      background: var(--bg-alt);
+      border-radius: var(--radius);
+      padding: 18px 18px 20px;
+      border: 1px solid var(--border);
+    }
+
+    .panel h2 {
+      font-size: 16px;
+      margin-bottom: 4px;
+    }
+
+    .panel p {
+      font-size: 13px;
+      color: var(--muted);
+      margin-bottom: 12px;
+    }
+
+    .choice-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .choice {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      border-radius: 8px;
+      background: #151822;
+      border: 1px solid var(--border);
+      cursor: pointer;
+      transition: 0.15s ease;
+    }
+
+    .choice:hover {
+      border-color: var(--accent-soft);
+    }
+
+    .choice input {
+      accent-color: var(--xbox-green);
+      width: 16px;
+      height: 16px;
+      cursor: pointer;
+    }
+
+    .choice-main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .choice-title {
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .choice-sub {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .badge {
+      font-size: 13px;
+      padding: 4px 8px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid var(--border);
+      white-space: nowrap;
+    }
+
+    .summary-card {
+      background: linear-gradient(135deg, #151822, #101218);
+      border-radius: var(--radius);
+      padding: 18px 18px 20px;
+      border: 1px solid var(--border);
+      box-shadow: 0 18px 40px rgba(0, 0, 0, 0.6);
+    }
+
+    .summary-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .summary-plan {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .summary-plan span:first-child {
+      font-size: 18px;
+      font-weight: 700;
+    }
+
+    .pill {
+      font-size: 11px;
+      padding: 3px 8px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid var(--border);
+      color: var(--muted);
+    }
+
+    .price {
+      font-size: 22px;
+      font-weight: 700;
+    }
+
+    .price span {
+      font-size: 13px;
+      color: var(--muted);
+      margin-left: 4px;
+    }
+
+    .tagline {
+      font-size: 13px;
+      color: var(--muted);
+      margin-bottom: 14px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .tile {
+      background: rgba(0, 0, 0, 0.25);
+      border-radius: 8px;
+      padding: 10px 10px 12px;
+      border: 1px solid var(--border);
+    }
+
+    .tile h3 {
+      font-size: 13px;
+      margin-bottom: 6px;
+    }
+
+    .tile ul {
+      list-style: disc;
+      padding-left: 18px;
+      font-size: 12px;
+      color: var(--muted);
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    @media (max-width: 900px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="page">
+    <header>
+      <div class="logo-circle">X</div>
+      <div>
+        <h1 id="txt-title">Simulador de planes Game Pass</h1>
+        <p id="txt-subtitle">Elige tu acceso y personaliza tu suscripción con extras opcionales.</p>
+      </div>
+
+      <div class="lang-currency-switcher">
+        <div class="lang-switch">
+          <button id="btn-lang-es" class="active">ES</button>
+          <button id="btn-lang-en">EN</button>
+        </div>
+
+        <div class="currency-switch">
+          <button id="btn-cur-eur" class="active">€</button>
+          <button id="btn-cur-usd">$</button>
+        </div>
+      </div>
+    </header>
+
+    <div class="layout">
+      <section class="panel">
+        <h2 id="txt-step1">1. Tipo de acceso al catálogo</h2>
+        <p id="txt-step1-desc">Define el núcleo de tu suscripción.</p>
+
+        <div class="choice-group" id="accessChoices">
+          <label class="choice">
+            <input type="radio" name="access" value="essential" checked />
+            <div class="choice-main">
+              <div class="choice-title" id="lbl-essential">Essential</div>
+              <div class="choice-sub" id="sub-essential">Catálogo básico</div>
+            </div>
+            <div class="badge" id="badge-essential">4 €</div>
+          </label>
+
+          <label class="choice">
+            <input type="radio" name="access" value="premium" />
+            <div class="choice-main">
+              <div class="choice-title" id="lbl-premium">Premium</div>
+              <div class="choice-sub" id="sub-premium">Juegos tras 1 año</div>
+            </div>
+            <div class="badge" id="badge-premium">8 €</div>
+          </label>
+
+          <label class="choice">
+            <input type="radio" name="access" value="premiumplus" />
+            <div class="choice-main">
+              <div class="choice-title" id="lbl-premiumplus">Premium+</div>
+              <div class="choice-sub" id="sub-premiumplus">Juegos tras 6 meses</div>
+            </div>
+            <div class="badge" id="badge-premiumplus">10 €</div>
+          </label>
+
+          <label class="choice">
+            <input type="radio" name="access" value="ultimate" />
+            <div class="choice-main">
+              <div class="choice-title" id="lbl-ultimate">Ultimate</div>
+              <div class="choice-sub" id="sub-ultimate">Day One</div>
+            </div>
+            <div class="badge" id="badge-ultimate">12 €</div>
+          </label>
+
+          <label class="choice">
+            <input type="radio" name="access" value="pc" />
+            <div class="choice-main">
+              <div class="choice-title" id="lbl-pc">PC</div>
+              <div class="choice-sub" id="sub-pc">Solo juegos de PC</div>
+            </div>
+            <div class="badge" id="badge-pc">10 €</div>
+          </label>
+
+          <label class="choice">
+            <input type="radio" name="access" value="console" />
+            <div class="choice-main">
+              <div class="choice-title" id="lbl-console">Consola</div>
+              <div class="choice-sub" id="sub-console">Solo juegos de consola</div>
+            </div>
+            <div class="badge" id="badge-console">10 €</div>
+          </label>
+        </div>
+
+        <h2 style="margin-top:20px;" id="txt-step2">2. Extras opcionales</h2>
+        <p id="txt-step2-desc">Se activan automáticamente según el plan, pero puedes modificarlos.</p>
+
+        <div class="choice-group" id="extrasChoices">
+          <label class="choice" id="choice-online">
+            <input type="checkbox" value="online" />
+            <div class="choice-main">
+              <div class="choice-title" id="lbl-online">Multijugador Online</div>
+            </div>
+            <div class="badge" id="badge-online">3 €</div>
+          </label>
+
+          <label class="choice" id="choice-nube">
+            <input type="checkbox" value="nube" />
+            <div class="choice-main">
+              <div class="choice-title" id="lbl-nube">Juego en la Nube</div>
+            </div>
+            <div class="badge" id="badge-nube">2 €</div>
+          </label>
+
+          <label class="choice" id="choice-fortnite">
+            <input type="checkbox" value="fortnite" />
+            <div class="choice-main">
+              <div class="choice-title" id="lbl-fortnite">Fortnite Crew</div>
+            </div>
+            <div class="badge" id="badge-fortnite">4 €</div>
+          </label>
+
+          <label class="choice" id="choice-ubi">
+            <input type="checkbox" value="ubi" />
+            <div class="choice-main">
+              <div class="choice-title" id="lbl-ubi">Ubisoft+ Classics</div>
+            </div>
+            <div class="badge" id="badge-ubi">3 €</div>
+          </label>
+
+          <label class="choice" id="choice-ea">
+            <input type="checkbox" value="ea" />
+            <div class="choice-main">
+              <div class="choice-title" id="lbl-ea">EA Play</div>
+            </div>
+            <div class="badge" id="badge-ea">2 €</div>
+          </label>
+        </div>
+      </section>
+
+      <section class="summary-card" id="summary">
+        <div class="summary-header">
+          <div class="summary-plan">
+            <span id="planName">Essential</span>
+            <span class="pill" id="planTag">Catálogo básico</span>
+          </div>
+          <div class="price" id="planPrice">
+            4 €<span id="planPriceSuffix">/mes</span>
+          </div>
+        </div>
+
+        <div class="tagline" id="planDescription">
+          Más de 50 juegos en consola Xbox, PC y dispositivos compatibles.
+        </div>
+
+        <div class="grid">
+          <div class="tile">
+            <h3 id="txt-catalog">Catálogo</h3>
+            <ul id="catalogList"></ul>
+          </div>
+
+          <div class="tile">
+            <h3 id="txt-services">Servicios</h3>
+            <ul id="servicesList"></ul>
+          </div>
+
+          <div class="tile">
+            <h3 id="txt-rewards">Recompensas</h3>
+            <ul id="rewardsList"></ul>
+          </div>
+
+          <div class="tile">
+            <h3 id="txt-premium">Servicios premium</h3>
+            <ul id="premiumList"></ul>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <script>
+    const translations = {
+      es: {
+        title: "Simulador de planes Game Pass",
+        subtitle: "Elige tu acceso y personaliza tu suscripción con extras opcionales.",
+        step1: "1. Tipo de acceso al catálogo",
+        step1desc: "Define el núcleo de tu suscripción.",
+        step2: "2. Extras opcionales",
+        step2desc: "Se activan automáticamente según el plan, pero puedes modificarlos.",
+        catalog: "Catálogo",
+        services: "Servicios",
+        rewards: "Recompensas",
+        premiumServices: "Servicios premium",
+        priceSuffix: "/mes",
+        extras: {
+          online: "Multijugador Online",
+          nube: "Juego en la Nube",
+          fortnite: "Fortnite Crew",
+          ubi: "Ubisoft+ Classics",
+          ea: "EA Play"
+        },
+		cloudLevels: {
+		  basic: "Juego en la nube (básico)",
+		  enhanced: "Juego en la nube (mejorado)",
+		  max: "Juego en la nube (máxima calidad)"
+		},
+        dynamic: {
+          cloudNotIncluded: "No incluye juego en la nube",
+          cloudNotActivated: "Juego en la nube no activado",
+          onlineNotAvailable: "Multijugador online no disponible en este plan",
+          onlineActivated: "Multijugador online activado",
+          onlineNotActivated: "Multijugador online no activado",
+          onlineIncluded: "Multijugador online incluido",
+          premiumNone: "No incluye servicios premium."
+        }
+      },
+      en: {
+        title: "Game Pass Plan Simulator",
+        subtitle: "Choose your access and customize your subscription with optional extras.",
+        step1: "1. Type of catalog access",
+        step1desc: "Define the core of your subscription.",
+        step2: "2. Optional extras",
+        step2desc: "They activate automatically depending on the plan, but you can modify them.",
+        catalog: "Catalog",
+        services: "Services",
+        rewards: "Rewards",
+        premiumServices: "Premium services",
+        priceSuffix: "/month",
+        extras: {
+          online: "Online Multiplayer",
+          nube: "Cloud Gaming",
+          fortnite: "Fortnite Crew",
+          ubi: "Ubisoft+ Classics",
+          ea: "EA Play"
+        },
+		cloudLevels: {
+		  basic: "Cloud gaming (basic)",
+		  enhanced: "Cloud gaming (enhanced)",
+		  max: "Cloud gaming (maximum quality)"
+		},
+        dynamic: {
+          cloudNotIncluded: "Cloud gaming not included",
+          cloudNotActivated: "Cloud gaming not activated",
+          onlineNotAvailable: "Online multiplayer not available in this plan",
+          onlineActivated: "Online multiplayer activated",
+          onlineNotActivated: "Online multiplayer not activated",
+          onlineIncluded: "Online multiplayer included",
+          premiumNone: "No premium services included."
+        }
+      }
+    };
+
+    const planTexts = {
+      es: {
+        essential: {
+          tag: "Catálogo básico",
+          catalog: [
+            "Más de 50 juegos en consola Xbox, PC y dispositivos compatibles",
+            "Transmite juegos, incluidos juegos seleccionados que ya sean tuyos"
+          ],
+          rewards: ["Juega y gana hasta 25.000 puntos Rewards al año en la Tienda con Rewards"]
+        },
+        premium: {
+          tag: "Juegos tras 1 año",
+          catalog: [
+            "Más de 200 juegos en consola Xbox, PC y dispositivos compatibles",
+            "Los nuevos juegos publicados por Xbox se incorporan a la biblioteca en un plazo de 12 meses tras su lanzamiento",
+            "Transmite juegos con tiempos de espera más cortos, incluidos juegos seleccionados que sean tuyos"
+          ],
+          rewards: ["Juega y gana hasta 50.000 puntos Rewards al año en la Tienda con Rewards"]
+        },
+        premiumplus: {
+          tag: "Juegos tras 6 meses",
+          catalog: [
+            "Más de 200 juegos en consola Xbox, PC y dispositivos compatibles",
+            "Los nuevos juegos publicados por Xbox se incorporan a la biblioteca en un plazo de 6 meses tras su lanzamiento",
+            "Transmite juegos con tiempos de espera más cortos, incluidos juegos seleccionados que sean tuyos"
+          ],
+          rewards: ["Juega y gana hasta 50.000 puntos Rewards al año en la Tienda con Rewards"]
+        },
+        ultimate: {
+          tag: "Day One",
+          catalog: [
+            "Más de 400 juegos en consola Xbox, PC y dispositivos compatibles",
+            "Nuevos juegos el mismo día de su lanzamiento, incluidos nuevos juegos publicados por Xbox y juegos de terceros",
+            "Transmite juegos de máxima calidad con tiempos de espera más breves, incluyendo juegos seleccionados que tengas"
+          ],
+          rewards: ["Juega y gana hasta 100.000 puntos Rewards al año en la Tienda con Rewards"]
+        },
+        pc: {
+          tag: "Solo PC",
+          catalog: [
+            "Cientos de juegos para PC",
+            "Nuevos juegos el mismo día de su lanzamiento, incluidos nuevos juegos publicados por Xbox y juegos de terceros"
+          ],
+          rewards: ["Juega y gana hasta 50.000 puntos Rewards al año en la Tienda con Rewards"]
+        },
+        console: {
+          tag: "Solo consola",
+          catalog: [
+            "Cientos de juegos para consola",
+            "Nuevos juegos el mismo día de su lanzamiento, incluidos nuevos juegos publicados por Xbox y juegos de terceros"
+          ],
+          rewards: ["Juega y gana hasta 50.000 puntos Rewards al año en la Tienda con Rewards"]
+        }
+      },
+      en: {
+        essential: {
+          tag: "Basic catalog",
+          catalog: [
+            "50+ games on Xbox console, PC, and supported devices",
+            "Stream games, including select games you already own"
+          ],
+          rewards: ["Play and earn up to $25 a year in the Store with Rewards"]
+        },
+        premium: {
+          tag: "Games after 1 year",
+          catalog: [
+            "200+ games on Xbox console, PC, and supported devices",
+            "New Xbox published games join the library within 12 months of launch",
+            "Stream games with shorter wait times, including select games you own"
+          ],
+          rewards: ["Play and earn up to $50 a year in the Store with Rewards"]
+        },
+        premiumplus: {
+          tag: "Games after 6 months",
+          catalog: [
+            "200+ games on Xbox console, PC, and supported devices",
+            "New Xbox published games join the library within 6 months of launch",
+            "Stream games with shorter wait times, including select games you own"
+          ],
+          rewards: ["Play and earn up to $50 a year in the Store with Rewards"]
+        },
+        ultimate: {
+          tag: "Day One",
+          catalog: [
+            "500+ games on Xbox console, PC, and supported devices",
+            "New games on day one, including new Xbox published games and third-party games",
+            "Stream games at our best quality with the shortest wait times, including select games you own"
+          ],
+          rewards: ["Play and earn up to $100 a year in the Store with Rewards"]
+        },
+        pc: {
+          tag: "Only PC games",
+          catalog: [
+            "Hundreds of PC games",
+            "New games on day one, including new Xbox published games and third-party games"
+          ],
+          rewards: ["Play and earn up to $50 a year in the Store with Rewards"]
+        },
+        console: {
+          tag: "Only console games",
+          catalog: [
+            "Hundreds of console games",
+            "New games on day one, including new Xbox published games and third-party games"
+          ],
+          rewards: ["Play and earn up to $50 a year in the Store with Rewards"]
+        }
+      }
+    };
+
+    const accessData = {
+      essential: {
+        name: "Essential",
+        tag: "Catálogo básico",
+        price: 4,
+        catalog: planTexts.es.essential.catalog,
+        rewards: planTexts.es.essential.rewards,
+        auto: ["online", "nube"],
+        cloudLevel: "basic"
+      },
+      premium: {
+        name: "Premium",
+        tag: "Juegos tras 1 año",
+        price: 8,
+        catalog: planTexts.es.premium.catalog,
+        rewards: planTexts.es.premium.rewards,
+        auto: ["online", "nube"],
+        cloudLevel: "enhanced"
+      },
+      premiumplus: {
+        name: "Premium+",
+        tag: "Juegos tras 6 meses",
+        price: 10,
+        catalog: planTexts.es.premiumplus.catalog,
+        rewards: planTexts.es.premiumplus.rewards,
+        auto: ["online", "nube"],
+        cloudLevel: "enhanced"
+      },
+      ultimate: {
+        name: "Ultimate",
+        tag: "Day One",
+        price: 12,
+        catalog: planTexts.es.ultimate.catalog,
+        rewards: planTexts.es.ultimate.rewards,
+        auto: ["online", "nube", "ea", "ubi", "fortnite"],
+        cloudLevel: "max"
+      },
+      pc: {
+        name: "PC",
+        tag: "Solo PC",
+        price: 10,
+        catalog: planTexts.es.pc.catalog,
+        rewards: planTexts.es.pc.rewards,
+        auto: ["ea"],
+        cloudLevel: "enhanced"
+      },
+      console: {
+        name: "Consola",
+        tag: "Solo consola",
+        price: 10,
+        catalog: planTexts.es.console.catalog,
+        rewards: planTexts.es.console.rewards,
+        auto: ["online"],
+        cloudLevel: "enhanced"
+      }
+    };
+
+    const extrasBasePricesEUR = {
+      online: 3,
+      nube: 2,
+      fortnite: 4,
+      ubi: 3,
+      ea: 2
+    };
+
+	const extrasBasePricesUSD = {
+	  online: 3,
+	  nube: 2,
+	  fortnite: 4,
+	  ubi: 3,
+	  ea: 2
+	};
+
+    const onlineCheckbox = document.querySelector('input[value="online"]');
+    const nubeCheckbox = document.querySelector('input[value="nube"]');
+
+    const basePricesEUR = {
+      essential: 4,
+      premium: 8,
+      premiumplus: 10,
+      ultimate: 12,
+      pc: 10,
+      console: 10
+    };
+
+	const basePricesUSD = {
+	  essential: 5,
+	  premium: 10,
+	  premiumplus: 12,
+	  ultimate: 14,
+	  pc: 11,
+	  console: 11
+	};
+
+    let currentLang = "es";
+    let currentCurrency = "eur";
+
+    function applyLanguage() {
+      const t = translations[currentLang];
+
+      document.getElementById("txt-title").textContent = t.title;
+      document.getElementById("txt-subtitle").textContent = t.subtitle;
+      document.getElementById("txt-step1").textContent = t.step1;
+      document.getElementById("txt-step1-desc").textContent = t.step1desc;
+      document.getElementById("txt-step2").textContent = t.step2;
+      document.getElementById("txt-step2-desc").textContent = t.step2desc;
+      document.getElementById("txt-catalog").textContent = t.catalog;
+      document.getElementById("txt-services").textContent = t.services;
+      document.getElementById("txt-rewards").textContent = t.rewards;
+      document.getElementById("txt-premium").textContent = t.premiumServices;
+
+      document.getElementById("lbl-online").textContent = t.extras.online;
+      document.getElementById("lbl-nube").textContent = t.extras.nube;
+      document.getElementById("lbl-fortnite").textContent = t.extras.fortnite;
+      document.getElementById("lbl-ubi").textContent = t.extras.ubi;
+      document.getElementById("lbl-ea").textContent = t.extras.ea;
+
+      update();
+    }
+
+	function getPrice(plan) {
+	  if (currentCurrency === "eur") {
+		return basePricesEUR[plan] + " €";
+	  } else {
+		return "$" + basePricesUSD[plan];
+	  }
+	}
+
+    function getExtraPriceEUR(key, access) {
+      const base = extrasBasePricesEUR[key];
+      const isPCorConsole = (access === "pc" || access === "console");
+      if (isPCorConsole && ["fortnite", "ubi", "ea"].includes(key)) return base + 1;
+      return base;
+    }
+
+    function getExtraPriceUSD(key, access) {
+      const base = extrasBasePricesUSD[key];
+      const isPCorConsole = (access === "pc" || access === "console");
+      if (isPCorConsole && ["fortnite", "ubi", "ea"].includes(key)) return base + 1;
+      return base;
+    }
+
+    function getExtraPrice(key, access) {
+      if (currentCurrency === "eur") {
+		const eur = getExtraPriceEUR(key, access);
+		return eur + " €";
+	  } else {
+		const usd = getExtraPriceUSD(key, access);
+		return "$" + usd;
+	  }
+    }
+
+    function updateBadgesForPlan(access) {
+      document.getElementById("badge-online").textContent = getExtraPrice("online", access);
+      document.getElementById("badge-nube").textContent = getExtraPrice("nube", access);
+      document.getElementById("badge-fortnite").textContent = getExtraPrice("fortnite", access);
+      document.getElementById("badge-ubi").textContent = getExtraPrice("ubi", access);
+      document.getElementById("badge-ea").textContent = getExtraPrice("ea", access);
+    }
+	
+	function updatePlanBadges() {
+	  document.getElementById("badge-essential").textContent = getPrice("essential");
+	  document.getElementById("badge-premium").textContent = getPrice("premium");
+	  document.getElementById("badge-premiumplus").textContent = getPrice("premiumplus");
+	  document.getElementById("badge-ultimate").textContent = getPrice("ultimate");
+	  document.getElementById("badge-pc").textContent = getPrice("pc");
+	  document.getElementById("badge-console").textContent = getPrice("console");
+	}
+
+	function updatePlanLabels() {
+	  const t = translations[currentLang];
+	  const es = planTexts[currentLang];
+
+	  // Nombres de los planes
+	  document.getElementById("lbl-essential").textContent = "Essential";
+	  document.getElementById("lbl-premium").textContent = "Premium";
+	  document.getElementById("lbl-premiumplus").textContent = "Premium+";
+	  document.getElementById("lbl-ultimate").textContent = "Ultimate";
+	  document.getElementById("lbl-pc").textContent = currentLang === "es" ? "PC" : "PC";
+	  document.getElementById("lbl-console").textContent = currentLang === "es" ? "Consola" : "Console";
+
+	  // Subtítulos (tags)
+	  document.getElementById("sub-essential").textContent = es.essential.tag;
+	  document.getElementById("sub-premium").textContent = es.premium.tag;
+	  document.getElementById("sub-premiumplus").textContent = es.premiumplus.tag;
+	  document.getElementById("sub-ultimate").textContent = es.ultimate.tag;
+	  document.getElementById("sub-pc").textContent = es.pc.tag;
+	  document.getElementById("sub-console").textContent = es.console.tag;
+	}
+
+    function applyDefaultsForPlan(access) {
+      const data = accessData[access];
+
+      document.querySelectorAll('#extrasChoices input').forEach(cb => {
+        cb.checked = false;
+        cb.disabled = false;
+        cb.onclick = null;
+      });
+
+      data.auto.forEach(x => {
+        const el = document.querySelector(`#extrasChoices input[value="${x}"]`);
+        if (el) el.checked = true;
+      });
+
+      if (access === "pc") {
+        onlineCheckbox.checked = false;
+        onlineCheckbox.disabled = true;
+      }
+
+      updateBadgesForPlan(access);
+
+      if (access === "ultimate") {
+        onlineCheckbox.checked = true;
+        nubeCheckbox.checked = true;
+
+        onlineCheckbox.onclick = e => { e.preventDefault(); e.target.checked = true; };
+        nubeCheckbox.onclick = e => { e.preventDefault(); e.target.checked = true; };
+
+        document.getElementById("badge-online").textContent =
+          currentCurrency === "eur" ? "Gratis" : "Free";
+
+        document.getElementById("badge-nube").textContent =
+          currentCurrency === "eur" ? "Gratis" : "Free";
+      }
+    }
+
+    function update() {
+      const access = document.querySelector('input[name="access"]:checked').value;
+      const langData = planTexts[currentLang][access];
+	  const cloud = translations[currentLang].cloudLevels;
+      const dyn = translations[currentLang].dynamic;
+
+      document.getElementById("planName").textContent =
+        document.getElementById("lbl-" + access).textContent;
+
+      document.getElementById("planTag").textContent = langData.tag;
+
+      let total = currentCurrency === "eur" ? basePricesEUR[access] : basePricesUSD[access];
+
+      document.querySelectorAll('#extrasChoices input:checked').forEach(cb => {
+        const key = cb.value;
+		let price;
+		if (currentCurrency === "eur") {
+		  price = getExtraPriceEUR(key, access);
+	    } else {
+		  price = getExtraPriceUSD(key, access);
+	    }
+
+        if (access === "ultimate" && (key === "online" || key === "nube")) {
+          price = 0;
+        }
+
+        total += price;
+      });
+
+      const finalPrice =
+        currentCurrency === "eur" ? total + " €" : "$" + total;
+
+      document.getElementById("planPrice").innerHTML =
+        finalPrice + `<span id="planPriceSuffix">${translations[currentLang].priceSuffix}</span>`;
+
+      document.getElementById("planDescription").textContent =
+        langData.catalog[0];
+
+      document.getElementById("catalogList").innerHTML =
+        langData.catalog.map(x => `<li>${x}</li>`).join("");
+
+      const services = [];
+      const nubeOn = nubeCheckbox.checked;
+      const onlineOn = onlineCheckbox.checked;
+
+      if (nubeOn) {
+        services.push(cloud[accessData[access].cloudLevel]);
+      } else {
+        services.push(dyn.cloudNotActivated);
+      }
+
+      if (access === "pc") {
+        services.push(dyn.onlineNotAvailable);
+      } else {
+        services.push(onlineOn ? dyn.onlineActivated : dyn.onlineNotActivated);
+      }
+
+      document.getElementById("servicesList").innerHTML =
+        services.map(x => `<li>${x}</li>`).join("");
+
+      document.getElementById("rewardsList").innerHTML =
+        langData.rewards.map(x => `<li>${x}</li>`).join("");
+
+      const premium = [];
+      if (document.querySelector('input[value="fortnite"]').checked)
+        premium.push(currentLang === "es" ? "Fortnite Crew incluido" : "Fortnite Crew included");
+
+      if (document.querySelector('input[value="ea"]').checked)
+        premium.push(currentLang === "es" ? "EA Play incluido" : "EA Play included");
+
+      if (document.querySelector('input[value="ubi"]').checked)
+        premium.push(currentLang === "es" ? "Ubisoft+ Classics incluido" : "Ubisoft+ Classics included");
+
+      document.getElementById("premiumList").innerHTML =
+        premium.length ? premium.map(x => `<li>${x}</li>`).join("") :
+        `<li>${dyn.premiumNone}</li>`;
+    }
+
+    document.querySelectorAll('input[name="access"]').forEach(el => {
+      el.addEventListener("change", () => {
+        if (el.checked) {
+          applyDefaultsForPlan(el.value);
+          update();
+        }
+      });
+    });
+
+    document.querySelectorAll('#extrasChoices input').forEach(el => {
+      el.addEventListener("change", update);
+    });
+
+    document.getElementById("btn-lang-es").onclick = () => {
+      currentLang = "es";
+      document.getElementById("btn-lang-es").classList.add("active");
+      document.getElementById("btn-lang-en").classList.remove("active");
+	  updatePlanLabels();
+      applyLanguage();
+    };
+
+    document.getElementById("btn-lang-en").onclick = () => {
+      currentLang = "en";
+      document.getElementById("btn-lang-en").classList.add("active");
+      document.getElementById("btn-lang-es").classList.remove("active");
+	  updatePlanLabels();
+      applyLanguage();
+    };
+
+    document.getElementById("btn-cur-eur").onclick = () => {
+      currentCurrency = "eur";
+      document.getElementById("btn-cur-eur").classList.add("active");
+      document.getElementById("btn-cur-usd").classList.remove("active");
+	  const access = document.querySelector('input[name="access"]:checked').value
+	  updateBadgesForPlan(access);
+	  updatePlanBadges();
+      update();
+	  applyDefaultsForPlan(access);
+    };
+
+    document.getElementById("btn-cur-usd").onclick = () => {
+      currentCurrency = "usd";
+      document.getElementById("btn-cur-usd").classList.add("active");
+      document.getElementById("btn-cur-eur").classList.remove("active");
+	  const access = document.querySelector('input[name="access"]:checked').value
+	  updateBadgesForPlan(access);
+	  updatePlanBadges();
+      update();
+	  applyDefaultsForPlan(access);
+    };
+
+    applyDefaultsForPlan("essential");
+    update();
+  </script>
+</body>
+</html>
