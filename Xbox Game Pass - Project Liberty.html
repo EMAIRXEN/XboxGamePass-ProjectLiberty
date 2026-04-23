@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Simulador de planes Game Pass – Configurable</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root {
+      --bg: #050608;
+      --bg-alt: #101218;
+      --card: #151822;
+      --accent: #2ecc71;
+      --accent-soft: #1f8f4f;
+      --text: #f5f5f5;
+      --muted: #a0a4b8;
+      --border: #262a3a;
+      --xbox-green: #107c10;
+      --radius: 10px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    body {
+      background: radial-gradient(circle at top, #1b2333 0, #050608 55%);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 24px;
+      display: flex;
+      justify-content: center;
+    }
+
+    .page {
+      max-width: 1100px;
+      width: 100%;
+    }
+
+    header {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .logo-circle {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 30% 30%, #3cff7a, #0a4f1a);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 20px;
+      color: #fff;
+    }
+
+    h1 {
+      font-size: 26px;
+      font-weight: 700;
+    }
+
+    header p {
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1.2fr) minmax(0, 1.4fr);
+      gap: 20px;
+    }
+
+    @media (max-width: 900px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .panel {
+      background: linear-gradient(145deg, rgba(16, 124, 16, 0.12), rgba(0, 0, 0, 0.7));
+      border-radius: var(--radius);
+      padding: 18px 18px 20px;
+      border: 1px solid var(--border);
+    }
+
+    .panel h2 {
+      font-size: 18px;
+      margin-bottom: 10px;
+    }
+
+    .panel p {
+      font-size: 13px;
+      color: var(--muted);
+      margin-bottom: 12px;
+    }
+
+    .choice-group {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 8px;
+    }
+
+    .choice {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      border-radius: 8px;
+      background: rgba(0, 0, 0, 0.35);
+      border: 1px solid var(--border);
+      cursor: pointer;
+      transition: border 0.15s ease, background 0.15s ease, transform 0.08s ease;
+    }
+
+    .choice:hover {
+      border-color: var(--accent-soft);
+      transform: translateY(-1px);
+    }
+
+    .choice input {
+      accent-color: var(--xbox-green);
+      width: 18px;
+      height: 18px;
+    }
+
+    .choice-main {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .choice-title {
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .choice-sub {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .badge {
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: rgba(16, 124, 16, 0.18);
+      color: #b9ffd0;
+      border: 1px solid rgba(16, 124, 16, 0.6);
+      margin-left: auto;
+      white-space: nowrap;
+    }
+
+    .summary-card {
+      background: var(--card);
+      border-radius: var(--radius);
+      padding: 16px 16px 18px;
+      border: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .summary-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 8px;
+    }
+
+    .summary-plan {
+      font-size: 16px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .pill {
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.06);
+      color: var(--muted);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+    }
+
+    .price {
+      font-size: 20px;
+      font-weight: 700;
+      color: #ffffff;
+    }
+
+    .price span {
+      font-size: 13px;
+      color: var(--muted);
+      font-weight: 400;
+      margin-left: 4px;
+    }
+
+    .tagline {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 10px;
+      margin-top: 6px;
+    }
+
+    .tile {
+      background: rgba(0, 0, 0, 0.35);
+      border-radius: 8px;
+      padding: 10px 11px;
+      border: 1px solid var(--border);
+      font-size: 12px;
+    }
+
+    .tile h3 {
+      font-size: 13px;
+      margin-bottom: 4px;
+    }
+
+    .tile ul {
+      list-style: none;
+      padding-left: 0;
+      margin-top: 4px;
+    }
+
+    .tile li {
+      margin-bottom: 3px;
+      color: var(--muted);
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header>
+      <div class="logo-circle">X</div>
+      <div>
+        <h1>Simulador de planes Game Pass</h1>
+        <p>Elige tu acceso y personaliza tu suscripción con extras opcionales.</p>
+      </div>
+    </header>
+
+    <div class="layout">
+      <!-- Panel de selección -->
+      <section class="panel">
+        <h2>1. Tipo de acceso al catálogo</h2>
+        <p>Define el núcleo de tu suscripción.</p>
+
+        <div class="choice-group" id="accessChoices">
+          <label class="choice">
+            <input type="radio" name="access" value="essential" checked />
+            <div class="choice-main">
+              <div class="choice-title">Essential</div>
+              <div class="choice-sub">Catálogo básico</div>
+            </div>
+            <div class="badge">4 €</div>
+          </label>
+
+          <label class="choice">
+            <input type="radio" name="access" value="premium" />
+            <div class="choice-main">
+              <div class="choice-title">Premium</div>
+              <div class="choice-sub">Juegos tras 1 año</div>
+            </div>
+            <div class="badge">8 €</div>
+          </label>
+
+          <label class="choice">
+            <input type="radio" name="access" value="premiumplus" />
+            <div class="choice-main">
+              <div class="choice-title">Premium+</div>
+              <div class="choice-sub">Juegos tras 6 meses</div>
+            </div>
+            <div class="badge">10 €</div>
+          </label>
+
+          <label class="choice">
+            <input type="radio" name="access" value="ultimate" />
+            <div class="choice-main">
+              <div class="choice-title">Ultimate</div>
+              <div class="choice-sub">Day One</div>
+            </div>
+            <div class="badge">12 €</div>
+          </label>
+
+          <label class="choice">
+            <input type="radio" name="access" value="pc" />
+            <div class="choice-main">
+              <div class="choice-title">PC</div>
+              <div class="choice-sub">Solo juegos de PC</div>
+            </div>
+            <div class="badge">10 €</div>
+          </label>
+
+          <label class="choice">
+            <input type="radio" name="access" value="console" />
+            <div class="choice-main">
+              <div class="choice-title">Consola</div>
+              <div class="choice-sub">Solo juegos de consola</div>
+            </div>
+            <div class="badge">10 €</div>
+          </label>
+        </div>
+
+        <h2 style="margin-top:20px;">2. Extras opcionales</h2>
+        <p>Se activan automáticamente según el plan, pero puedes modificarlos.</p>
+
+        <div class="choice-group" id="extrasChoices">
+          <label class="choice" id="choice-online">
+            <input type="checkbox" value="online" />
+            <div class="choice-main">
+              <div class="choice-title">Multijugador Online</div>
+            </div>
+            <div class="badge" id="badge-online">3 €</div>
+          </label>
+
+          <label class="choice" id="choice-nube">
+            <input type="checkbox" value="nube" />
+            <div class="choice-main">
+              <div class="choice-title">Juego en la Nube</div>
+            </div>
+            <div class="badge" id="badge-nube">2 €</div>
+          </label>
+
+          <label class="choice" id="choice-fortnite">
+            <input type="checkbox" value="fortnite" />
+            <div class="choice-main">
+              <div class="choice-title">Fortnite Crew</div>
+            </div>
+            <div class="badge" id="badge-fortnite">4 €</div>
+          </label>
+
+          <label class="choice" id="choice-ubi">
+            <input type="checkbox" value="ubi" />
+            <div class="choice-main">
+              <div class="choice-title">Ubisoft+ Classics</div>
+            </div>
+            <div class="badge" id="badge-ubi">3 €</div>
+          </label>
+
+          <label class="choice" id="choice-ea">
+            <input type="checkbox" value="ea" />
+            <div class="choice-main">
+              <div class="choice-title">EA Play</div>
+            </div>
+            <div class="badge" id="badge-ea">2 €</div>
+          </label>
+        </div>
+      </section>
+
+      <!-- Panel de resultado -->
+      <section class="summary-card" id="summary">
+        <div class="summary-header">
+          <div class="summary-plan">
+            <span id="planName">Essential</span>
+            <span class="pill" id="planTag">Catálogo básico</span>
+          </div>
+          <div class="price" id="planPrice">
+            4 €<span>/mes</span>
+          </div>
+        </div>
+
+        <div class="tagline" id="planDescription">
+          Más de 50 juegos en consola Xbox, PC y dispositivos compatibles.
+        </div>
+
+        <div class="grid">
+          <div class="tile">
+            <h3>Catálogo</h3>
+            <ul id="catalogList"></ul>
+          </div>
+
+          <div class="tile">
+            <h3>Servicios</h3>
+            <ul id="servicesList"></ul>
+          </div>
+
+          <div class="tile">
+            <h3>Recompensas</h3>
+            <ul id="rewardsList"></ul>
+          </div>
+
+          <div class="tile">
+            <h3>Servicios premium</h3>
+            <ul id="premiumList"></ul>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <script>
+    const accessData = {
+      essential: {
+        name: "Essential",
+        tag: "Catálogo básico",
+        price: 4,
+        catalog: [
+          "Más de 50 juegos en consola Xbox, PC y dispositivos compatibles",
+          "Transmite juegos, incluidos juegos seleccionados que ya sean tuyos"
+        ],
+        rewards: ["Hasta 25.000 puntos Rewards al año"],
+        auto: ["online", "nube"],
+        cloudLevel: "Juego en la nube (básico)"
+      },
+      premium: {
+        name: "Premium",
+        tag: "Juegos tras 1 año",
+        price: 8,
+        catalog: [
+          "Más de 200 juegos en consola Xbox, PC y dispositivos compatibles",
+          "Los nuevos juegos publicados por Xbox se incorporan 12 meses después",
+          "Transmite juegos con tiempos de espera más cortos"
+        ],
+        rewards: ["Hasta 50.000 puntos Rewards al año"],
+        auto: ["online", "nube"],
+        cloudLevel: "Juego en la nube (mejorado)"
+      },
+      premiumplus: {
+        name: "Premium+",
+        tag: "Juegos tras 6 meses",
+        price: 10,
+        catalog: [
+          "Más de 200 juegos en consola Xbox, PC y dispositivos compatibles",
+          "Los nuevos juegos publicados por Xbox se incorporan 6 meses después",
+          "Transmite juegos con tiempos de espera más cortos"
+        ],
+        rewards: ["Hasta 50.000 puntos Rewards al año"],
+        auto: ["online", "nube"],
+        cloudLevel: "Juego en la nube (mejorado)"
+      },
+      ultimate: {
+        name: "Ultimate",
+        tag: "Day One",
+        price: 12,
+        catalog: [
+          "Más de 400 juegos en consola Xbox, PC y dispositivos compatibles",
+          "Nuevos juegos el mismo día de su lanzamiento",
+          "Transmisión de máxima calidad"
+        ],
+        rewards: ["Hasta 100.000 puntos Rewards al año"],
+        auto: ["online", "nube", "ea", "ubi", "fortnite"],
+        cloudLevel: "Juego en la nube (máxima calidad)"
+      },
+      pc: {
+        name: "PC",
+        tag: "Solo PC",
+        price: 10,
+        catalog: [
+          "Cientos de juegos para PC",
+          "Nuevos juegos el mismo día de su lanzamiento"
+        ],
+        rewards: ["Hasta 50.000 puntos Rewards al año"],
+        auto: ["ea"],
+        cloudLevel: "Juego en la nube (mejorado)"
+      },
+      console: {
+        name: "Consola",
+        tag: "Solo consola",
+        price: 10,
+        catalog: [
+          "Cientos de juegos para consola",
+          "Nuevos juegos el mismo día de su lanzamiento"
+        ],
+        rewards: ["Hasta 50.000 puntos Rewards al año"],
+        auto: ["online"],
+        cloudLevel: "Juego en la nube (mejorado)"
+      }
+    };
+
+    const extrasBasePrices = {
+      online: 3,
+      nube: 2,
+      fortnite: 4,
+      ubi: 3,
+      ea: 2
+    };
+
+    const onlineCheckbox = document.querySelector('input[value="online"]');
+    const nubeCheckbox = document.querySelector('input[value="nube"]');
+
+    function updateBadgesForPlan(access) {
+      const isPCorConsole = (access === "pc" || access === "console");
+
+      const fortniteBadge = document.getElementById("badge-fortnite");
+      const ubiBadge = document.getElementById("badge-ubi");
+      const eaBadge = document.getElementById("badge-ea");
+
+      const fortnitePrice = extrasBasePrices.fortnite + (isPCorConsole ? 1 : 0);
+      const ubiPrice = extrasBasePrices.ubi + (isPCorConsole ? 1 : 0);
+      const eaPrice = extrasBasePrices.ea + (isPCorConsole ? 1 : 0);
+
+      fortniteBadge.textContent = fortnitePrice + " €";
+      ubiBadge.textContent = ubiPrice + " €";
+      eaBadge.textContent = eaPrice + " €";
+
+      document.getElementById("badge-online").textContent = extrasBasePrices.online + " €";
+      document.getElementById("badge-nube").textContent = extrasBasePrices.nube + " €";
+    }
+
+    function applyDefaultsForPlan(access) {
+      const data = accessData[access];
+
+      // Reset extras
+      document.querySelectorAll('#extrasChoices input').forEach(cb => {
+        cb.checked = false;
+        cb.disabled = false;
+        cb.onclick = null;
+      });
+
+      // Auto-select extras
+      data.auto.forEach(x => {
+        const el = document.querySelector(`#extrasChoices input[value="${x}"]`);
+        if (el) el.checked = true;
+      });
+
+      // PC: online no disponible
+      if (access === "pc") {
+        onlineCheckbox.checked = false;
+        onlineCheckbox.disabled = true;
+      }
+
+	  // Actualizamos los Precios
+	  updateBadgesForPlan(access);
+	  
+      // Ultimate: online y nube siempre activos, gratis y no desmarcables
+      if (access === "ultimate") {
+        onlineCheckbox.checked = true;
+        nubeCheckbox.checked = true;
+
+        onlineCheckbox.onclick = e => { e.preventDefault(); e.target.checked = true; };
+        nubeCheckbox.onclick = e => { e.preventDefault(); e.target.checked = true; };
+
+        document.getElementById("badge-online").innerHTML = "<s>3 €</s> Gratis";
+        document.getElementById("badge-nube").innerHTML = "<s>2 €</s> Gratis";
+      }
+    }
+
+    function update() {
+      const access = document.querySelector('input[name="access"]:checked').value;
+      const data = accessData[access];
+
+      const isPCorConsole = (access === "pc" || access === "console");
+
+      let total = data.price;
+
+      document.querySelectorAll('#extrasChoices input:checked').forEach(cb => {
+        const key = cb.value;
+        let price = extrasBasePrices[key];
+
+        if (access === "ultimate" && (key === "online" || key === "nube")) {
+          price = 0;
+        } else if (isPCorConsole && (key === "fortnite" || key === "ubi" || key === "ea")) {
+          price += 1;
+        }
+
+        total += price;
+      });
+
+      document.getElementById("planName").textContent = data.name;
+      document.getElementById("planTag").textContent = data.tag;
+      document.getElementById("planPrice").innerHTML = total + " €<span>/mes</span>";
+
+      document.getElementById("planDescription").textContent = data.catalog[0];
+
+      document.getElementById("catalogList").innerHTML =
+        data.catalog.map(x => `<li>${x}</li>`).join("");
+
+      const services = [];
+      const nubeOn = nubeCheckbox.checked;
+      const onlineOn = onlineCheckbox.checked;
+
+      if (access === "pc" || access === "console") {
+        if (nubeOn) {
+          services.push(accessData[access].cloudLevel);
+        } else {
+          services.push("No incluye juego en la nube");
+        }
+      } else {
+        if (nubeOn) {
+          services.push(accessData[access].cloudLevel);
+        } else {
+          services.push("Juego en la nube no activado");
+        }
+      }
+
+      if (access === "pc") {
+        services.push("Multijugador online no disponible en este plan");
+      } else {
+        if (onlineOn) {
+          services.push("Multijugador online incluido");
+        } else {
+          services.push("Multijugador online no activado");
+        }
+      }
+
+      document.getElementById("servicesList").innerHTML =
+        services.map(x => `<li>${x}</li>`).join("");
+
+      document.getElementById("rewardsList").innerHTML =
+        data.rewards.map(x => `<li>${x}</li>`).join("");
+
+      const premium = [];
+      if (document.querySelector('input[value="fortnite"]').checked) premium.push("Fortnite Crew incluido");
+      if (document.querySelector('input[value="ea"]').checked) premium.push("EA Play incluido");
+      if (document.querySelector('input[value="ubi"]').checked) premium.push("Ubisoft+ Classics incluido");
+
+      document.getElementById("premiumList").innerHTML =
+        premium.length ? premium.map(x => `<li>${x}</li>`).join("") :
+        "<li>No incluye servicios premium.</li>";
+    }
+
+    document.querySelectorAll('input[name="access"]').forEach(el => {
+      el.addEventListener("change", () => {
+        if (el.checked) {
+          const access = el.value;
+          applyDefaultsForPlan(access);
+          update();
+        }
+      });
+    });
+
+    document.querySelectorAll('#extrasChoices input').forEach(el => {
+      el.addEventListener("change", () => {
+        update();
+      });
+    });
+
+    applyDefaultsForPlan("essential");
+    update();
+  </script>
+</body>
+</html>
